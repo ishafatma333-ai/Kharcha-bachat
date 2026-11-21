@@ -1,0 +1,359 @@
+Save this as index.html (or kharcha_roast.html) in your GitHub repo—it runs directly in any browser with zero setup:
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KharchaRoast — Hinglish AI Expense Tracker & UPI Roast</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #090d16;
+      color: #f1f5f9;
+    }
+    .glass-card {
+      background: rgba(19, 26, 42, 0.85);
+      border: 1px solid rgba(148, 163, 184, 0.14);
+      backdrop-filter: blur(12px);
+    }
+    .roast-gradient {
+      background: linear-gradient(135deg, #f97316 0%, #ef4444 100%);
+    }
+    .safe-gradient {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(148, 163, 184, 0.25);
+      border-radius: 9999px;
+    }
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .toast-enter {
+      animation: slideDown 0.28s ease-out forwards;
+    }
+  </style>
+</head>
+<body class="min-h-screen antialiased selection:bg-orange-500/30 selection:text-orange-200">
+  <!-- Live Roast Push Notification Banner -->
+  <div id="toast-container" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-[92%] max-w-md pointer-events-none space-y-2"></div>
+
+  <!-- Top Navigation -->
+  <header class="sticky top-0 z-30 border-b border-slate-800/80 bg-[#090d16]/90 backdrop-blur-md">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-2.5">
+        <div class="w-9 h-9 rounded-xl roast-gradient flex items-center justify-center shadow-lg shadow-orange-500/20">
+          <i data-lucide="flame" class="w-5 h-5 text-white"></i>
+        </div>
+        <div>
+          <h1 class="text-base sm:text-lg font-extrabold tracking-tight text-white leading-none">KharchaRoast</h1>
+          <p class="text-[11px] text-slate-400 mt-0.5">UPI Connected • Hinglish AI Finance</p>
+        </div>
+      </div>
+
+      <!-- Roast Mode Selector -->
+      <div class="flex items-center gap-1.5 bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+        <button data-mode="pyaar" class="mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+          🫶 Pyaar Se
+        </button>
+        <button data-mode="mild" class="mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all text-slate-400 hover:text-white">
+          😏 Mild Roast
+        </button>
+        <button data-mode="savage" class="mode-btn px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all bg-orange-500 text-white shadow-sm">
+          🔥 Full Savage
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-6xl mx-auto px-4 py-5 space-y-5">
+    <!-- Top KPI Strip -->
+    <section class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+      <div class="glass-card rounded-2xl p-4">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span>Monthly Salary</span>
+          <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium">1st Credited</span>
+        </div>
+        <p id="kpi-salary" class="text-xl sm:text-2xl font-extrabold text-white mt-1.5">₹65,000</p>
+        <p class="text-[11px] text-slate-400 mt-1">HDFC •••• 4821 (UPI)</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span>Spent This Month</span>
+          <i data-lucide="trending-up" class="w-4 h-4 text-orange-400"></i>
+        </div>
+        <p id="kpi-spent" class="text-xl sm:text-2xl font-extrabold text-orange-400 mt-1.5">₹0</p>
+        <p id="kpi-spent-pct" class="text-[11px] text-slate-400 mt-1">0% of salary gone</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4">
+        <div class="flex items-center justify-between text-xs text-slate-400">
+          <span>Safe to Spend</span>
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-400"></i>
+        </div>
+        <p id="kpi-safe" class="text-xl sm:text-2xl font-extrabold text-emerald-400 mt-1.5">₹0</p>
+        <p class="text-[11px] text-slate-400 mt-1">After ₹18,000 rent hold</p>
+      </div>
+
+      <div class="glass-card rounded-2xl p-4 border-orange-500/30">
+        <div class="flex items-center justify-between text-xs text-orange-300">
+          <span>Rent Countdown</span>
+          <i data-lucide="home" class="w-4 h-4 text-orange-400"></i>
+        </div>
+        <p class="text-xl sm:text-2xl font-extrabold text-white mt-1.5">4 Days Left</p>
+        <p class="text-[11px] text-orange-300/90 mt-1">₹18,000 due on 25th</p>
+      </div>
+    </section>
+
+    <!-- Main 2-Column Workspace -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+      <!-- Left Column: AI Roast Chat + Simulate UPI -->
+      <section class="lg:col-span-7 space-y-5">
+        <!-- AI Hinglish Chat Card -->
+        <div class="glass-card rounded-2xl flex flex-col h-[470px]">
+          <div class="px-4 py-3 border-b border-slate-800/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full roast-gradient flex items-center justify-center text-sm font-bold">KR</div>
+              <div>
+                <h2 class="text-sm font-bold text-white">RoastBot (Hinglish AI)</h2>
+                <p id="mode-subtitle" class="text-[11px] text-orange-400">Mode: Full Savage 🔥 — No mercy on Zomato orders</p>
+              </div>
+            </div>
+            <button id="clear-chat-btn" class="text-xs text-slate-400 hover:text-white px-2 py-1 rounded-lg hover:bg-slate-800 transition">
+              Reset Chat
+            </button>
+          </div>
+
+          <!-- Chat Messages -->
+          <div id="chat-messages" class="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin"></div>
+
+          <!-- Quick Prompts -->
+          <div class="px-4 py-2 border-t border-slate-800/70 flex gap-2 overflow-x-auto scrollbar-thin">
+            <button class="quick-ask shrink-0 text-xs px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Can I afford dinner tonight?
+            </button>
+            <button class="quick-ask shrink-0 text-xs px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Myntra sale dekhun?
+            </button>
+            <button class="quick-ask shrink-0 text-xs px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Zomato pe kitna udaaya?
+            </button>
+            <button class="quick-ask shrink-0 text-xs px-3 py-1.5 rounded-full bg-slate-800/90 hover:bg-slate-700 text-slate-200 border border-slate-700 transition">
+              Rent ka kya scene hai?
+            </button>
+          </div>
+
+          <!-- Chat Input -->
+          <form id="chat-form" class="p-3 border-t border-slate-800/80 flex gap-2">
+            <input
+              id="chat-input"
+              type="text"
+              placeholder="Ask in Hinglish... e.g. 'Bhai ₹1,200 ke sneakers le loon?'"
+              class="flex-1 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500"
+            />
+            <button type="submit" class="roast-gradient px-4 py-2.5 rounded-xl text-sm font-semibold text-white hover:opacity-95 transition flex items-center gap-1.5 shrink-0">
+              <span>Ask</span>
+              <i data-lucide="send" class="w-4 h-4"></i>
+            </button>
+          </form>
+        </div>
+
+        <!-- Simulate Live UPI Transaction -->
+        <div class="glass-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <div>
+              <h2 class="text-sm font-bold text-white flex items-center gap-2">
+                <i data-lucide="zap" class="w-4 h-4 text-yellow-400"></i>
+                Simulate Live UPI Payment
+              </h2>
+              <p class="text-xs text-slate-400">Test how UPI SMS/Webhook triggers an instant Hinglish roast</p>
+            </div>
+          </div>
+
+          <!-- Quick Trigger Buttons -->
+          <div class="flex flex-wrap gap-2 mb-3">
+            <button type="button" data-merchant="Zomato" data-amount="480" data-cat="Food Delivery" class="quick-upi text-xs px-3 py-1.5 rounded-xl bg-red-500/15 text-red-300 border border-red-500/30 hover:bg-red-500/25 transition">
+              + Zomato ₹480
+            </button>
+            <button type="button" data-merchant="Swiggy Instamart" data-amount="650" data-cat="Quick Commerce" class="quick-upi text-xs px-3 py-1.5 rounded-xl bg-orange-500/15 text-orange-300 border border-orange-500/30 hover:bg-orange-500/25 transition">
+              + Swiggy ₹650
+            </button>
+            <button type="button" data-merchant="Myntra" data-amount="2499" data-cat="Shopping" class="quick-upi text-xs px-3 py-1.5 rounded-xl bg-pink-500/15 text-pink-300 border border-pink-500/30 hover:bg-pink-500/25 transition">
+              + Myntra ₹2,499
+            </button>
+            <button type="button" data-merchant="Chai Sutta Bar" data-amount="140" data-cat="Food Delivery" class="quick-upi text-xs px-3 py-1.5 rounded-xl bg-amber-500/15 text-amber-300 border border-amber-500/30 hover:bg-amber-500/25 transition">
+              + Chai ₹140
+            </button>
+          </div>
+
+          <!-- Custom UPI Form -->
+          <form id="upi-form" class="grid grid-cols-1 sm:grid-cols-12 gap-2.5">
+            <input id="upi-merchant" type="text" required placeholder="Merchant (e.g. Zepto)" class="sm:col-span-4 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500" />
+            <input id="upi-amount" type="number" min="1" required placeholder="₹ Amount" class="sm:col-span-3 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-white placeholder:text-slate-500 focus:outline-none focus:border-orange-500" />
+            <select id="upi-category" class="sm:col-span-3 bg-slate-900/90 border border-slate-700/80 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500">
+              <option value="Food Delivery">Food Delivery</option>
+              <option value="Quick Commerce">Quick Commerce</option>
+              <option value="Shopping">Shopping</option>
+              <option value="Commute">Commute</option>
+              <option value="Entertainment">Entertainment</option>
+            </select>
+            <button type="submit" class="sm:col-span-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold text-sm rounded-xl px-3 py-2 transition">
+              Pay UPI
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Right Column: Analytics, Smart Reminders & UPI Feed -->
+      <section class="lg:col-span-5 space-y-5">
+        <!-- Category Breakdown Chart -->
+        <div class="glass-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-sm font-bold text-white">Where Your Salary Went</h2>
+            <span class="text-[11px] text-slate-400">Nov 1 – Nov 21</span>
+          </div>
+          <div class="relative h-52">
+            <canvas id="spend-chart"></canvas>
+          </div>
+        </div>
+
+        <!-- Witty Reminder Rules -->
+        <div class="glass-card rounded-2xl p-4 space-y-2.5">
+          <h2 class="text-sm font-bold text-white">Active Roast Triggers</h2>
+          <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 cursor-pointer">
+            <div>
+              <p class="text-xs font-semibold text-white">Food Delivery Cap (₹2,000/wk)</p>
+              <p class="text-[11px] text-slate-400">Roasts when Zomato/Swiggy crosses ₹2k</p>
+            </div>
+            <input type="checkbox" id="rule-food" checked class="w-4 h-4 accent-orange-500" />
+          </label>
+          <label class="flex items-center justify-between p-2.5 rounded-xl bg-slate-900/70 border border-slate-800 cursor-pointer">
+            <div>
+              <p class="text-xs font-semibold text-white">Rent Shield (₹18,000 lock)</p>
+              <p class="text-[11px] text-slate-400">Warns before any spend eats into rent</p>
+            </div>
+            <input type="checkbox" id="rule-rent" checked class="w-4 h-4 accent-orange-500" />
+          </label>
+        </div>
+
+        <!-- Recent UPI Transactions -->
+        <div class="glass-card rounded-2xl p-4">
+          <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-bold text-white">Recent UPI Feed</h2>
+            <span id="tx-count" class="text-xs text-slate-400">0 txns</span>
+          </div>
+          <div id="tx-list" class="space-y-2.5 max-h-64 overflow-y-auto pr-1 scrollbar-thin"></div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const SALARY = 65000;
+    const RENT_DUE = 18000;
+    const RENT_DAYS = 4;
+
+    let roastMode = 'savage'; // 'pyaar' | 'mild' | 'savage'
+    let spendChart = null;
+
+    const state = {
+      transactions: [
+        { id: 1, merchant: 'Zomato', amount: 640, category: 'Food Delivery', time: 'Today, 1:45 PM', vpa: 'zomato@okaxis', roastTag: 'Biryani again? 🍗' },
+        { id: 2, merchant: 'Myntra', amount: 3299, category: 'Shopping', time: 'Yesterday, 9:20 PM', vpa: 'myntra@icici', roastTag: 'End of Reason Sale victim 🛍️' },
+        { id: 3, merchant: 'Swiggy', amount: 520, category: 'Food Delivery', time: '19 Nov, 11:15 PM', vpa: 'swiggy@hdfcbank', roastTag: '11 PM cravings tax 🌙' },
+        { id: 4, merchant: 'Zepto', amount: 890, category: 'Quick Commerce', time: '18 Nov, 6:10 PM', vpa: 'zepto@ybl', roastTag: '10-min delivery, 10-sec regret ⚡' },
+        { id: 5, merchant: 'Uber Auto', amount: 245, category: 'Commute', time: '17 Nov, 10:05 AM', vpa: 'uber@axisbank', roastTag: 'Metro bhi chalti hai bhai 🚇' },
+        { id: 6, merchant: 'Zomato', amount: 1890, category: 'Food Delivery', time: '15 Nov, 8:40 PM', vpa: 'zomato@okaxis', roastTag: 'Weekend party sponsor 🍕' },
+        { id: 7, merchant: 'Airtel Fiber', amount: 999, category: 'Entertainment', time: '10 Nov, 12:00 PM', vpa: 'airtel@okicici', roastTag: 'WiFi zaroori hai ✅' },
+        { id: 8, merchant: 'Blue Tokai', amount: 380, category: 'Food Delivery', time: '08 Nov, 4:30 PM', vpa: 'bluetokai@ybl', roastTag: '₹380 ki coffee? Ambani ho? ☕' }
+      ],
+      messages: [
+        {
+          sender: 'bot',
+          text: 'Bhai ₹3,430 sirf Food Delivery pe uda diya is hafte, aur 4 din mein ₹18,000 ka rent due hai. Zomato ka CEO tera naam apne will mein likhega kya? 😭🔥'
+        }
+      ]
+    };
+
+    const formatINR = (num) => '₹' + Number(num).toLocaleString('en-IN');
+
+    function getTotals() {
+      const totalSpent = state.transactions.reduce((sum, t) => sum + t.amount, 0);
+      const remaining = Math.max(0, SALARY - totalSpent);
+      const safeToSpend = Math.max(0, remaining - RENT_DUE);
+      const foodSpend = state.transactions
+        .filter((t) => t.category === 'Food Delivery')
+        .reduce((sum, t) => sum + t.amount, 0);
+      const shoppingSpend = state.transactions
+        .filter((t) => t.category === 'Shopping')
+        .reduce((sum, t) => sum + t.amount, 0);
+      return { totalSpent, remaining, safeToSpend, foodSpend, shoppingSpend };
+    }
+
+    function generateRoast({ merchant, amount, category }) {
+      const { totalSpent, safeToSpend, foodSpend } = getTotals();
+      const ruleFood = document.getElementById('rule-food').checked;
+      const ruleRent = document.getElementById('rule-rent').checked;
+
+      if (ruleRent && safeToSpend < 3000) {
+        if (roastMode === 'pyaar') {
+          return `Heads up dost! ${merchant} pe ${formatINR(amount)} gaya. Ab sirf ${formatINR(safeToSpend)} safe bacha hai rent (${formatINR(RENT_DUE)}) ke baad. Thoda sambhal ke! 🫶`;
+        }
+        if (roastMode === 'mild') {
+          return `${merchant} pe ${formatINR(amount)}? Bhai ${RENT_DAYS} din mein rent dena hai aur safe balance sirf ${formatINR(safeToSpend)} bacha hai. Landlord ko Zomato coupon dega kya? 😅`;
+        }
+        return `OYE! ${merchant} pe ${formatINR(amount)} aur uda diya?! Safe balance sirf ${formatINR(safeToSpend)} bacha hai aur ${RENT_DAYS} din mein ₹18k rent hai. Ab kya footpath pe WiFi lagwayega? 🚨🔥`;
+      }
+
+      if (ruleFood && category === 'Food Delivery' && foodSpend > 2000) {
+        if (roastMode === 'pyaar') {
+          return `${merchant} se ${formatINR(amount)} ka order! Is mahine food delivery ${formatINR(foodSpend)} ho gaya hai — ghar pe dal-chawal try karein? 🍲`;
+        }
+        if (roastMode === 'mild') {
+          return `Phir se ${merchant} (${formatINR(amount)})? Tera food delivery bill ${formatINR(foodSpend)} cross kar gaya hai. Kitchen sirf Maggie banane ke liye rakha hai kya? 🍜`;
+        }
+        return `Bhai ${merchant} pe ${formatINR(amount)} aur?! Total ${formatINR(foodSpend)} khane mein phoonk diya! Teri mummy ko screenshot bhejun ya tu khud tiffin lagwa raha hai? 💀`;
+      }
+
+      if (category === 'Shopping' && amount >= 1500) {
+        if (roastMode === 'pyaar') {
+          return `${merchant} pe ${formatINR(amount)} ki shopping! Hope zaroori tha — ab is hafte thoda no-spend challenge rakhte hain. ✨`;
+        }
+        if (roastMode === 'mild') {
+          return `${merchant} pe ${formatINR(amount)}! "Sale chal rahi thi" bolke wallet ka murder kar diya na? 🛍️`;
+        }
+        return `${merchant} pe ${formatINR(amount)}?! Salary 1st ko aati hai aur 20th tak tu gareeb ho jata hai, yahi reason hai! Kapde pehan ke kahan jayega jab metro ke paise nahi bachenge? 😭`;
+      }
+
+      if (roastMode === 'pyaar') {
+        return `${merchant} pe ${formatINR(amount)} note kar liya hai. Safe-to-spend ab ${formatINR(safeToSpend)} hai. 👍`;
+      }
+      if (roastMode === 'mild') {
+        return `${merchant} pe ${formatINR(amount)} gaya. Total kharcha ${formatINR(totalSpent)} pahunch gaya hai, dhyaan rakh! 👀`;
+      }
+      return `${merchant} pe ${formatINR(amount)}? Chhote-chhote kharche hi tera bank balance kha rahe hain bhai. Safe balance: ${formatINR(safeToSpend)}. 💸`;
+    }
+
+    function generateChatReply(userText) {
+      const q = userText.toLowerCase();
+      const { safeToSpend, foodSpend, shoppingSpend, totalSpent } = getTotals();
+
+      if (q.includes('dinner') || q.includes('afford') || q.includes('khana') || q.includes('swiggy') || q.includes('zomato')) {
+        if (safeToSpend < 800) {
+          return roastMode === 'pyaar'
+            ? `Abhi safe balance sirf ${formatINR(safeToSpend)} hai rent ke baad. Aaj ghar pe kuch bana lo, weekend pe treat kar lena! 🫶`
+            : `Dinner? Bhai safe balance ${formatINR(safeToSpend)} bacha hai aur already ${formatINR(foodSpend)} Zomato/Swiggy pe uda chuka hai! Aaj chupchaap Maggi bana le. 🍜🔥`;
+        }
+        return roastMode === 'savag
